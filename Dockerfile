@@ -6,4 +6,4 @@ EXPOSE 873
 
 ADD build/rootfs.tar.gz /
 
-CMD ["/usr/bin/supervisord"]
+CMD ["/app/daemon.sh"]
