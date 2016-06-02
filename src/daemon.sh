@@ -5,9 +5,11 @@
 inotifywait -mr -e close_write --fromfile /app/wait-list.txt | while read DEST EVENT FILE
 do
     SERVICE=`echo $DEST | cut -d"/" -f3`
-
+    UUID=`echo $(basename "$DEST")`
     case "$SERVICE" in
-        "zip") rsync -avP $DEST$FILE rsync://unzip:873/data
+        "zip")
+            rsync --inplace -a ${DEST%?} rsync://extractor:873/data
+            rm -rf ${DEST%?}
         ;;
         "unzip") echo "rsync -avP $DEST$FILE rsync://10.0.0.2:873/data"
         ;;
