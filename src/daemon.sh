@@ -9,7 +9,7 @@ do
     case "$SERVICE" in
         "zip")
             rsync --inplace -a ${DEST%?} rsync://extractor:873/data
-            rm -rf ${DEST%?}
+            rm -rf $DEST$FILE
         ;;
         "unzip") echo "rsync -avP $DEST$FILE rsync://10.0.0.2:873/data"
         ;;

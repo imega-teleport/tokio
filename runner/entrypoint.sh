@@ -1,5 +1,4 @@
-#!/bin/bash -x
-#/usr/bin/env bash
+#!/usr/bin/env bash
 mkdir -p $ROOTFS/var/run
 mkdir -p $ROOTFS/app
 
