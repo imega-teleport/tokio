@@ -1,7 +1,10 @@
 # Build rootfs for composer
 
 build: build-fs
-	@docker build -t imega/tokio .
+	@docker build -t imegateleport/tokio .
+
+push:
+	@docker push imegateleport/tokio:latest
 
 build-fs:
 	@docker run --rm \
