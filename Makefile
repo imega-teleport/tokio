@@ -31,7 +31,7 @@ clean: stop
 	@rm -rf build/containers/*
 
 data_dir:
-	@-mkdir -p $(CURDIR)/data/zip $(CURDIR)/data/unzip
+	@-mkdir -p $(CURDIR)/data/zip $(CURDIR)/data/unzip $(CURDIR)/data/parse $(CURDIR)/data/storage
 
 build/containers/teleport_fileman:
 	@mkdir -p $(shell dirname $@)
