@@ -33,6 +33,7 @@ clean: stop
 
 data_dir:
 	@-mkdir -p $(CURDIR)/data/zip $(CURDIR)/data/parse $(CURDIR)/data/storage
+	@-chmod -R 777 $(CURDIR)/data
 
 build/containers/teleport_fileman:
 	@mkdir -p $(shell dirname $@)
