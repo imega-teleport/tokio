@@ -2,12 +2,13 @@
 
 TELEPORT_FILEMAN ?= imegateleport/tokio
 TELEPORT_EXTRACTOR ?= imegateleport/vigo
+TELEPORT_PARSER ?= imegateleport/oslo
 
 build: build-fs
-	@docker build -t imegateleport/tokio .
+	@docker build -t $(TELEPORT_FILEMAN) .
 
 push:
-	@docker push imegateleport/tokio:latest
+	@docker push $(TELEPORT_FILEMAN):latest
 
 build_dir:
 	@-mkdir -p $(CURDIR)/build
@@ -28,10 +29,10 @@ stop: get_containers
 
 clean: stop
 	@-docker rm -fv $(CONTAINERS)
-	@rm -rf build/containers/*
+	@-rm -rf build/containers/*
 
 data_dir:
-	@-mkdir -p $(CURDIR)/data/zip $(CURDIR)/data/unzip $(CURDIR)/data/parse $(CURDIR)/data/storage
+	@-mkdir -p $(CURDIR)/data/zip $(CURDIR)/data/parse $(CURDIR)/data/storage
 
 build/containers/teleport_fileman:
 	@mkdir -p $(shell dirname $@)
@@ -51,6 +52,16 @@ build/containers/teleport_extractor:
 		$(TELEPORT_EXTRACTOR)
 	@touch $@
 
+build/containers/teleport_parser:
+	@mkdir -p $(shell dirname $@)
+	@docker run -d \
+		--name teleport_parser \
+		--restart=always \
+		-v $(CURDIR)/data/parse:/data \
+		--link teleport_fileman:fileman \
+		$(TELEPORT_PARSER)
+	@touch $@
+
 discovery_extractor:
 	@while [ "`docker inspect -f {{.State.Running}} teleport_extractor`" != "true" ]; do \
 		@echo "wait teleport_extractor"; sleep 0.3; \
@@ -58,19 +69,29 @@ discovery_extractor:
 	$(eval IP := $(shell docker inspect --format '{{ .NetworkSettings.IPAddress }}' teleport_extractor))
 	@docker exec teleport_fileman sh -c 'echo -e "$(IP)\textractor" >> /etc/hosts'
 
+discovery_parser:
+	@while [ "`docker inspect -f {{.State.Running}} teleport_parser`" != "true" ]; do \
+		@echo "wait teleport_parser"; sleep 0.3; \
+	done
+	$(eval IP := $(shell docker inspect --format '{{ .NetworkSettings.IPAddress }}' teleport_parser))
+	@docker exec teleport_fileman sh -c 'echo -e "$(IP)\tparser" >> /etc/hosts'
+
 build/containers/teleport_tester:
 	@cd tests;docker build -t imegateleport/tokio_tester .
 
-test: data_dir build/containers/teleport_fileman build/containers/teleport_extractor discovery_extractor build/containers/teleport_tester
+containers: build/containers/teleport_fileman \
+	build/containers/teleport_extractor \
+	build/containers/teleport_parser \
+	build/containers/teleport_tester
+
+test: data_dir containers discovery_extractor discovery_parser
 	@docker run --rm \
 		--link teleport_fileman:fileman \
-		-v $(CURDIR)/tests/fixtures:/data/source \
+		-v $(CURDIR)/tests/fixtures:/data \
 		imegateleport/tokio_tester \
-		rsync --inplace -av /data/source/9915e49a-4de1-41aa-9d7d-c9a687ec048d rsync://fileman/zip
-	@if [ ! -f "$(CURDIR)/data/unzip/9915e49a-4de1-41aa-9d7d-c9a687ec048d/import.xml" ];then \
-		exit 1; \
-	fi
-	@if [ ! -f "$(CURDIR)/data/unzip/9915e49a-4de1-41aa-9d7d-c9a687ec048d/offers.xml" ];then \
+		rsync --inplace -av /data/9915e49a-4de1-41aa-9d7d-c9a687ec048d rsync://fileman/zip
+	@sleep 1
+	@if [ ! -f "$(CURDIR)/data/storage/9915e49a-4de1-41aa-9d7d-c9a687ec048d/dump.sql" ];then \
 		exit 1; \
 	fi
 
