@@ -12,8 +12,7 @@ do
             rm -rf $DEST$FILE
         ;;
         "parse")
-            rsync --inplace -av --debug=ALL $DEST$FILE rsync://parser:873/data/$UUID/ && \
-            rm -rf $DEST$FILE
+            rsync --inplace -av --debug=ALL $DEST$FILE rsync://parser:873/data/$UUID/
         ;;
     esac
 done
