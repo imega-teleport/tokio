@@ -92,7 +92,7 @@ test: data_dir containers discovery_extractor discovery_parser
 		imegateleport/tokio_tester \
 		rsync --inplace -av /data/9915e49a-4de1-41aa-9d7d-c9a687ec048d rsync://fileman/zip
 	@sleep 1
-	@if [ ! -f "$(CURDIR)/data/storage/9915e49a-4de1-41aa-9d7d-c9a687ec048d/dump.sql" ];then \
+	@if [ `ls data/storage/9915e49a-4de1-41aa-9d7d-c9a687ec048d/ | wc -l` != 6 ];then \
 		exit 1; \
 	fi
 
