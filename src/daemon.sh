@@ -1,6 +1,6 @@
 #!/bin/sh
 
-/usr/bin/rsync --no-detach --daemon --config /etc/rsyncd.conf &
+/usr/bin/rsync --no-detach --debug=ALL --daemon --config /etc/rsyncd.conf &
 
 inotifywait -mr -e close_write --fromfile /app/wait-list.txt | while read DEST EVENT FILE
 do
